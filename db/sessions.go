@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/CTS/AuthService/internal"
@@ -17,8 +16,7 @@ type Session struct {
 
 func createSessionID(email string) string {
 	// Create a unique session ID based on the email and current time
-	sessionID := internal.EncodeSHA256([]byte(email + time.Now().String()))
-	return fmt.Sprintf("%x", sessionID)
+	return internal.EncodeSHA256([]byte(email + time.Now().String()))
 }
 
 func SessionCreate(user *User, expiresAt time.Duration) (string, error) {
