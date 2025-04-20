@@ -23,5 +23,5 @@ func EncodeSHA256(data []byte) string {
 	// Compute the SHA256 hash
 	hash := sha256.Sum256(data)
 	// the hash in hexadecimal format
-	return fmt.Sprintf("%x\n", hash)
+	return fmt.Sprintf("%x", hash)
 }
