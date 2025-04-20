@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/CurtisTechSolutions/AuthService/compare/v1.0.0...v1.0.1) (2025-04-20)
+
+
+### Bug Fixes
+
+* Removed newline character from Sprintf ([#5](https://github.com/CurtisTechSolutions/AuthService/issues/5)) ([d7633ed](https://github.com/CurtisTechSolutions/AuthService/commit/d7633ed62f4df7a537aa014f05f27e83a7da4d5c))
+
 ## 1.0.0 (2025-04-20)
 
 
