@@ -11,5 +11,11 @@ test:
 run:
 	./bin/authservice
 
-buildmon:
-	air .
+build-image:
+	docker build -t authservice .
+
+up:
+	docker compose -p authservice --env-file ./.env up -d
+
+down:
+	docker compose -p authservice down
