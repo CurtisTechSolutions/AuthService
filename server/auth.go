@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/CTS/AuthService/db"
@@ -12,13 +11,12 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func BaseRoutes() *chi.Mux {
+func AuthRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/login", login)
 	r.Post("/signup", signup)
 	r.Post("/logout", logout)
 	r.Post("/validate", validateSession)
-	r.Get("/dbg/hostname", systemHostname)
 	return r
 }
 
@@ -154,19 +152,6 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Logged out"))
 
 	// Find all sessions for the user in the database and delete them or set them to expired
-}
-
-func systemHostname(w http.ResponseWriter, r *http.Request) {
-	// Get the system hostname
-	hostname, err := os.Hostname()
-	if err != nil {
-		slog.Error("Unable to get hostname", "error", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	// Write the hostname to the response
-	w.Write([]byte(hostname))
-	w.WriteHeader(http.StatusOK)
 }
 
 func validateSession(w http.ResponseWriter, r *http.Request) {
