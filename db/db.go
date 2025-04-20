@@ -2,6 +2,7 @@ package db
 
 import (
 	"log/slog"
+	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,8 +11,11 @@ import (
 var DB *gorm.DB
 
 func Connect(autoMigrate bool) {
-	dsn := "host=localhost user=postgres password=password dbname=authservice port=5432 sslmode=disable TimeZone=America/Los_Angeles"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Set up the database connection
+	// Use environment variable for DSN
+	// Example: POSTGRES_DSN='host=localhost user=postgres password=password dbname=authservice port=5432 sslmode=disable TimeZone=America/Los_Angeles'
+	postgresDSN := os.Getenv("POSTGRES_DSN")
+	db, err := gorm.Open(postgres.Open(postgresDSN), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

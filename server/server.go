@@ -35,7 +35,9 @@ func Start() error {
 	r.Use(middleware.Recoverer)
 
 	// Define routes
-	r.Mount("/", BaseRoutes())
+	r.Mount("/", AuthRoutes())
+
+	r.Get("/dbg/hostname", systemHostname)
 
 	// Start the server
 	err := http.ListenAndServe(":9090", r)
