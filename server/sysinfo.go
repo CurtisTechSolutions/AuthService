@@ -11,10 +11,16 @@ func systemHostname(w http.ResponseWriter, r *http.Request) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		slog.Error("Unable to get hostname", "error", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Unable to get hostname",
+		})
 		return
 	}
 	// Write the hostname to the response
-	w.Write([]byte(hostname))
-	w.WriteHeader(http.StatusOK)
+	SendJSONResponse(w, Response{
+		Success: true,
+		Message: "Hostname retrieved successfully",
+		Data:    hostname,
+	})
 }
