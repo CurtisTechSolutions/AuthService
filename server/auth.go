@@ -90,7 +90,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	exists, err := db.UserExists(&db.User{Email: form.Email})
 	if err != nil {
 		slog.Error("Error checking user existence", "error", err.Error(), "email", form.Email)
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Unable to create user",
 		})
@@ -98,7 +98,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	}
 	if exists {
 		slog.Error("Email already in use", "email", form.Email)
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Email already in use",
 		})
@@ -108,7 +108,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	// Validate the password
 	if form.Password == "" {
 		slog.Error("Password cannot be empty")
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Please check your email and password",
 		})
@@ -118,7 +118,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	// Check if the password is strong enough
 	if len(form.Password) < 8 {
 		slog.Error("Password must be at least 8 characters long")
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Password must be at least 8 characters long",
 		})
@@ -128,7 +128,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	// Check if the email is valid
 	if form.Email == "" {
 		slog.Error("Email cannot be empty")
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Please check your email and password",
 		})
@@ -138,7 +138,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := internal.HashPassword(form.Password)
 	if err != nil {
 		slog.Error("Error hashing password", "error", err.Error())
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Unable to create user",
 		})
@@ -147,7 +147,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	// Check if the hashed password is valid
 	if hashedPassword == "" {
 		slog.Error("Error hashing password")
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Unable to create user",
 		})
@@ -163,7 +163,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		slog.Error("Error creating user", "error", err.Error())
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Unable to create user",
 		})
@@ -184,7 +184,7 @@ func validateSession(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session_id")
 	if err != nil {
 		slog.Error("Session cookie not found", "error", err.Error())
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Session cookie not found",
 		})
@@ -195,14 +195,14 @@ func validateSession(w http.ResponseWriter, r *http.Request) {
 	session, err := db.SessionValidate(sessionCookie.Value)
 	if err != nil && !session {
 		slog.Error("Error validating session", "error", err.Error())
-		SendJSONResponseHelper(w, Response{
+		SendJSONResponse(w, Response{
 			Success: false,
 			Message: "Session not found",
 		})
 		return
 	}
 
-	SendJSONResponseHelper(w, Response{
+	SendJSONResponse(w, Response{
 		Success: true,
 		Message: "Session is valid",
 	})

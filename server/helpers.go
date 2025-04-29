@@ -12,11 +12,11 @@ type Response struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// SendJSONResponseHelper is a helper function to send JSON responses.
+// SendJSONResponse is a helper function to send JSON responses.
 //
 // It sets the Content-Type header to application/json and writes the response.
 // It also sets the status code based on the success field of the response.
-func SendJSONResponseHelper(w http.ResponseWriter, response Response) {
+func SendJSONResponse(w http.ResponseWriter, response Response) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if response.Success {
