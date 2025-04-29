@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 	"time"
@@ -30,10 +29,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 	// Get username and password from request
 	// Validate the username and password
 	var form LoginForm
-	err := json.NewDecoder(r.Body).Decode(&form)
-	if err != nil {
-		slog.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+	if err := BodyParser(r, &form); err != nil {
+		slog.Error("Error parsing request body", "error", err.Error())
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Invalid request",
+		})
 		return
 	}
 
@@ -80,9 +81,12 @@ type SignupForm struct {
 func signup(w http.ResponseWriter, r *http.Request) {
 	// Implementation for signing up a user
 	var form SignupForm
-	err := json.NewDecoder(r.Body).Decode(&form)
-	if err != nil {
-		slog.Error(err.Error())
+	if err := BodyParser(r, &form); err != nil {
+		slog.Error("Error parsing request body", "error", err.Error())
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Invalid request",
+		})
 		return
 	}
 

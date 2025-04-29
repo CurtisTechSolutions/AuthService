@@ -33,3 +33,15 @@ func SendJSONResponse(w http.ResponseWriter, response Response) {
 	}
 	w.Write(jsonResponse)
 }
+
+// BodyParser takes an http.Request and a pointer to the struct to decode the data to.
+//
+// Example: BodyParser(r.Body)
+func BodyParser(r *http.Request, body interface{}) error {
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		slog.Error("Error decoding request body", "error", err.Error())
+		return err
+	}
+	return nil
+}
