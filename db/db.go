@@ -20,7 +20,6 @@ func Connect(autoMigrate bool) {
 		panic("failed to connect database")
 	}
 	DB = db
-
 	slog.Info("Connected to database")
 
 	if autoMigrate {
