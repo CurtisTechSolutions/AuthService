@@ -37,7 +37,7 @@ func Start() error {
 	// Define routes
 	r.Mount("/", AuthRoutes())
 
-	r.Get("/dbg/hostname", systemHostname)
+	r.Get("/sysinfo/hostname", systemHostname)
 
 	// Start the server
 	err := http.ListenAndServe(":9090", r)
