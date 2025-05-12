@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 )
 
@@ -10,11 +12,21 @@ type User struct {
 	Email    string
 	Password string
 	Role     string
+	Birthday Birthday
+	Balance  float64
+	// Used as nonce
+	NumberOfPlays int64
 }
 
 func UserCreate(user *User) error {
 	// Check if the user already exists
-	UserGet(&User{Email: user.Email})
+	exists, err := UserExists(&User{Email: user.Email})
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("user already exists")
+	}
 
 	result := DB.Create(user)
 	if result.Error != nil {
