@@ -2,24 +2,32 @@ package db
 
 import (
 	"log/slog"
-	"os"
 
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-func Connect(autoMigrate bool) {
+func DialectorPostgres(dsn string) gorm.Dialector {
+	return postgres.Open(dsn)
+}
+
+func DialectorSQLite() gorm.Dialector {
+	return sqlite.Open("test.db")
+}
+
+func Connect(dialector gorm.Dialector, config *gorm.Config, autoMigrate bool) {
 	// Set up the database connection
 	// Use environment variable for DSN
-	// Example: POSTGRES_DSN='host=localhost user=postgres password=password dbname=authservice port=5432 sslmode=disable TimeZone=America/Los_Angeles'
-	postgresDSN := os.Getenv("POSTGRES_DSN")
-	db, err := gorm.Open(postgres.Open(postgresDSN), &gorm.Config{})
+
+	db, err := gorm.Open(dialector, config)
 	if err != nil {
 		panic("failed to connect database")
 	}
 	DB = db
+
 	slog.Info("Connected to database")
 
 	if autoMigrate {
@@ -30,11 +38,11 @@ func Connect(autoMigrate bool) {
 }
 
 func migrate() {
-	DB.AutoMigrate(&User{})
-	slog.Info("Migrated User schema")
-
 	DB.AutoMigrate(&Session{})
 	slog.Info("Migrated Session schema")
+
+	DB.AutoMigrate(&User{})
+	slog.Info("Migrated User schema")
 
 	// Notify that migrations are complete
 	slog.Info("Migrations completed")
