@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/CurtisTechSolutions/AuthService/compare/v1.0.1...v1.1.0) (2025-05-12)
+
+
+### Miscellaneous Chores
+
+* release 1.1.0 ([8ca3953](https://github.com/CurtisTechSolutions/AuthService/commit/8ca3953bc1a9f3a688b656639a7bad609cb5249b))
+
 ## [1.0.1](https://github.com/CurtisTechSolutions/AuthService/compare/v1.0.0...v1.0.1) (2025-04-20)
 
 
