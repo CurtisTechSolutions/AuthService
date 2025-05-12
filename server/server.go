@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func Start() error {
+func Start(port int) error {
 	// Initialize the server
 	r := chi.NewRouter()
 
@@ -35,11 +37,13 @@ func Start() error {
 	r.Use(middleware.Recoverer)
 
 	// Define routes
-	r.Mount("/", AuthRoutes())
-
+	r.Mount("/auth", AuthRoutes())
+	r.Mount("/user", UserRoutes())
+	r.Mount("/info", InfoRoutes())
 	r.Get("/sysinfo/hostname", systemHostname)
 
+	slog.Info("Starting server", "port", port)
 	// Start the server
-	err := http.ListenAndServe(":9090", r)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 	return err
 }
