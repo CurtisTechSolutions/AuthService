@@ -19,16 +19,20 @@ func AuthRoutes() *chi.Mux {
 	return r
 }
 
-type LoginForm struct {
+type loginForm struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type loginResponse struct {
+	Token string `json:"token"`
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
 	// Implementation for logging in a user
 	// Get username and password from request
 	// Validate the username and password
-	var form LoginForm
+	var form loginForm
 	if err := BodyParser(r, &form); err != nil {
 		slog.Error("Error parsing request body", "error", err.Error())
 		SendJSONResponse(w, Response{
@@ -42,20 +46,29 @@ func login(w http.ResponseWriter, r *http.Request) {
 	user, err := db.UserGet(&db.User{Email: form.Email, Status: "active"})
 	if err != nil {
 		slog.Error("Error getting user", "error", err.Error(), "email", form.Email)
-		w.WriteHeader(http.StatusNotFound)
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Unable to get user",
+		})
 		return
 	}
 	// Check if user exists and is not active
 	if user == nil {
 		slog.Error("User not found", "email", form.Email)
-		w.WriteHeader(http.StatusNotFound)
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "User not found",
+		})
 		return
 	}
 
 	// Check if the user entered the correct password
 	if !internal.VerifyPassword(user.Password, form.Password) {
 		slog.Error("Invalid password", "email", form.Email)
-		w.WriteHeader(http.StatusUnauthorized)
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Invalid credentials",
+		})
 		return
 	}
 
@@ -63,7 +76,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := db.SessionCreate(user, time.Hour*24)
 	if err != nil {
 		slog.Error("Error creating session", "error", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Unable to create session",
+		})
 		return
 	}
 	// Send the session back to the user
@@ -71,16 +87,30 @@ func login(w http.ResponseWriter, r *http.Request) {
 		Name:  "session_id",
 		Value: sessionID,
 	})
+
+	// Send a success response
+	SendJSONResponse(w, Response{
+		Success: true,
+		Message: "Login successful",
+		Data: loginResponse{
+			Token: sessionID,
+		},
+	})
 }
 
-type SignupForm struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type signupForm struct {
+	Email    string      `json:"email"`
+	Password string      `json:"password"`
+	Birthday db.Birthday `json:"birthday"`
+}
+
+type signupResponse struct {
+	Token string `json:"token,omitempty"`
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
 	// Implementation for signing up a user
-	var form SignupForm
+	var form signupForm
 	if err := BodyParser(r, &form); err != nil {
 		slog.Error("Error parsing request body", "error", err.Error())
 		SendJSONResponse(w, Response{
@@ -173,14 +203,81 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	// Create a session and add it to the database. Expires in 24 hours
+	sessionID, err := db.SessionCreate(&db.User{Email: form.Email}, time.Hour*24)
+	if err != nil {
+		slog.Error("Error creating session", "error", err.Error())
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Unable to create session",
+		})
+		return
+	}
+
+	// Send the session back to the user
+	http.SetCookie(w, &http.Cookie{
+		Name:  "session_id",
+		Value: sessionID,
+	})
+	// Send a success response
+	SendJSONResponse(w, Response{
+		Success: true,
+		Message: "Signup successful",
+		Data: signupResponse{
+			Token: sessionID,
+		},
+	})
+}
+
+type logoutForm struct {
+	Token string `json:"token,omitempty"`
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	// Remove any session cookies
-	slog.Debug("Implement me :)")
-	w.Write([]byte("Logged out"))
+	var form logoutForm
+	err := BodyParser(r, &form)
+	if err != nil {
+		slog.Error("Error parsing request body", "error", err.Error())
+	}
 
-	// Find all sessions for the user in the database and delete them or set them to expired
+	// Check if the session cookie is present
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		// Check if the token is present in the request body if no cookie is found
+		if form.Token == "" {
+			// Success is true because the user is not logged in
+			SendJSONResponse(w, Response{
+				Success: true,
+				Message: "You are not logged in",
+			})
+			return
+		}
+
+		slog.Error("Session cookie not found", "error", err.Error())
+	}
+
+	// Expire the session in the database
+	err = db.SessionExpire(cookie.Value)
+	if err != nil {
+		slog.Error("Error expiring session", "error", err.Error())
+		SendJSONResponse(w, Response{
+			Success: false,
+			Message: "Unable to logout",
+		})
+		return
+	}
+
+	// Expire the session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:   "session_id",
+		Value:  "",
+		MaxAge: -1,
+	})
+	SendJSONResponse(w, Response{
+		Success: true,
+		Message: "Logout successful",
+	})
 }
 
 func validateSession(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +287,7 @@ func validateSession(w http.ResponseWriter, r *http.Request) {
 		slog.Error("Session cookie not found", "error", err.Error())
 		SendJSONResponse(w, Response{
 			Success: false,
-			Message: "Session cookie not found",
+			Message: "Session not found",
 		})
 		return
 	}
