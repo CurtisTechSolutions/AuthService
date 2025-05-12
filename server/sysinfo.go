@@ -4,7 +4,15 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi/v5"
 )
+
+func InfoRoutes() *chi.Mux {
+	r := chi.NewRouter()
+	r.Post("/hostname", systemHostname)
+	return r
+}
 
 func systemHostname(w http.ResponseWriter, r *http.Request) {
 	// Get the system hostname
